@@ -9,7 +9,7 @@ const Navbar = () => {
     logOut();
   };
   return (
-    <div className="navbar bg-base-100 shadow-sm container px-4 mx-auto">
+    <div className="navbar  shadow-sm container px-4 mx-auto">
       <div className="flex-1">
         <Link className="flex gap-2 items-center">
           <img className="w-auto h-7" src={logo} alt="" />
@@ -30,7 +30,7 @@ const Navbar = () => {
         </ul>
 
         {user && (
-          <div className="dropdown dropdown-end z-50">
+          <div className="dropdown dropdown-end z-10 ">
             <div
               tabIndex={0}
               role="button"

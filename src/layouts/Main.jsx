@@ -4,7 +4,7 @@ import Footer from "../components/Footer";
 
 const Main = () => {
   return (
-    <div>
+    <div className="px-20">
       {/* Navbar */}
       <Navbar />
       {/* Outlet */}
@@ -13,7 +13,6 @@ const Main = () => {
       </div>
 
       {/* Footer */}
-      <h1 className="text-center">Hi This is Footer</h1>
       <Footer />
     </div>
   );
