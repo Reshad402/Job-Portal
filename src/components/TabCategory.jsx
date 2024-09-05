@@ -2,10 +2,20 @@
 import { Tab, Tabs, TabList, TabPanel } from "react-tabs";
 import "react-tabs/style/react-tabs.css";
 import JobCard from "./JobCard";
+import { useEffect, useState } from "react";
+import axios from "axios";
 
-const TabCategory = ({ jobs }) => {
-  const { job_title, category } = jobs;
-  console.log("Tab", job_title, category);
+const TabCategory = () => {
+  // const { job_title, category } = jobs;
+  // console.log("Tab", job_title, category);
+  const [jobs, setJobs] = useState([]);
+  useEffect(() => {
+    const getData = async () => {
+      const { data } = await axios(`${import.meta.env.VITE_API_URL}/jobs`);
+      setJobs(data);
+    };
+    getData();
+  }, []);
   return (
     <div>
       <div className="">
@@ -28,7 +38,7 @@ const TabCategory = ({ jobs }) => {
         <TabPanel>
           <div className="grid grid-cols-1 gap-8 mt-8 xl:mt-16 md:grid-cols-2 xl:grid-cols-4 mb-8">
             {jobs
-              .filter((j) => j.category === "Web Development")
+              .filter((job) => job.category === "Web Development")
               .map((job) => (
                 <JobCard key={job._id} job={job}></JobCard>
               ))}
