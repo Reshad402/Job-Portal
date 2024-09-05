@@ -12,6 +12,8 @@ const router = createBrowserRouter([
       {
         index: true,
         element: <Home />,
+        // Here in .env.local file the URL is added as just change in need in env for final link
+        loader: () => fetch(`${import.meta.env.VITE_API_URL}/jobs`),
       },
       {
         path: "/login",
