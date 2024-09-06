@@ -12,6 +12,8 @@ const JobCard = ({ job }) => {
     max_price,
     min_price,
     description,
+    // eslint-disable-next-line no-unused-vars
+    biyer_email,
   } = job;
 
   return (

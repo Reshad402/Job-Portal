@@ -2,10 +2,13 @@ import { useContext, useState } from "react";
 import { useLoaderData } from "react-router-dom";
 import { AuthContext } from "../provider/AuthProvider";
 import DatePicker from "react-datepicker";
-
 import "react-datepicker/dist/react-datepicker.css";
+import axios from "axios";
+import toast from "react-hot-toast";
+
 const JobDetails = () => {
   const [startDate, setStartDate] = useState(new Date());
+  const [price, setPrice] = useState(""); // <-- Added: State to manage price input
   const job = useLoaderData();
   const {
     job_title,
@@ -15,36 +18,46 @@ const JobDetails = () => {
     max_price,
     min_price,
     description,
+    buyer_email,
   } = job || {};
   const { user } = useContext(AuthContext);
-
+  if (user === buyer_email) return toast.error("Yor are Job Poster");
   const handleFormSubmit = async (e) => {
     e.preventDefault();
-    const form = e.target;
-    const jobId = _id;
-    const price = parseFloat(form.price.value);
-    const comment = form.comment.value;
-    const email = user?.email;
-    const deadline = startDate;
-    // const buyer_email = form.buyer_email.value;
-    const status = "Pending";
+
+    // <-- Added: Validate price before submitting
+    if (parseFloat(price) < min_price) {
+      toast.error("Offer more or at least equal to the minimum price.");
+      return;
+    }
+
     const bidData = {
-      jobId,
-      price,
-      comment,
-      email,
-      // buyer_email,
-      status,
+      jobId: _id,
+      price: parseFloat(price), // <-- Edited: Using the `price` state
+      comment: e.target.comment.value,
+      email: user?.email,
+      deadline: startDate,
+      status: "Pending",
       job_title,
-      deadline,
       category,
     };
-    console.table(bidData);
+
+    try {
+      const { data } = await axios.post(
+        `${import.meta.env.VITE_API_URL}/bid`,
+        bidData
+      );
+      console.log(data);
+      toast.success("Successfully submitted bid request");
+    } catch (error) {
+      console.log(error?.message);
+    }
   };
+
   return (
     <div className="flex flex-col md:flex-row justify-around gap-5  items-center min-h-[calc(100vh-306px)] md:max-w-screen-xl mx-auto ">
       {/* Job Details */}
-      <div className="flex-1  px-4 py-7 bg-white rounded-md shadow-md md:min-h-[350px]">
+      <div className="flex-1 px-4 py-7 bg-white rounded-md shadow-md md:min-h-[350px]">
         <div className="flex items-center justify-between">
           <span className="text-sm font-light text-gray-800 ">
             Deadline: {deadline}
@@ -58,15 +71,14 @@ const JobDetails = () => {
           <h1 className="mt-2 text-3xl font-semibold text-gray-800 ">
             {job_title}
           </h1>
-
           <p className="mt-2 text-lg text-gray-600 ">{description}</p>
           <p className="mt-6 text-sm font-bold text-gray-600 ">
             Buyer Details:
           </p>
           <div className="flex items-center gap-5">
             <div>
-              <p className="mt-2 text-sm  text-gray-600 ">Name: Jhankar Vai.</p>
-              <p className="mt-2 text-sm  text-gray-600 ">
+              <p className="mt-2 text-sm text-gray-600 ">Name: Jhankar Vai.</p>
+              <p className="mt-2 text-sm text-gray-600 ">
                 Email: jhankar@mahbub.com
               </p>
             </div>
@@ -79,8 +91,9 @@ const JobDetails = () => {
           </p>
         </div>
       </div>
+
       {/* Place A Bid Form */}
-      <section className="p-6 w-full  bg-white rounded-md shadow-md flex-1 md:min-h-[350px]">
+      <section className="p-6 w-full bg-white rounded-md shadow-md flex-1 md:min-h-[350px]">
         <h2 className="text-lg font-semibold text-gray-700 capitalize ">
           Place A Bid
         </h2>
@@ -93,9 +106,15 @@ const JobDetails = () => {
               </label>
               <input
                 id="price"
-                type="text"
+                type="number" // <-- Edited: Changed to number type
                 name="price"
-                className="block w-full px-4 py-2 mt-2 text-gray-700 bg-white border border-gray-200 rounded-md   focus:border-blue-400 focus:ring-blue-300 focus:ring-opacity-40  focus:outline-none focus:ring"
+                value={price} // <-- Added: Binding the input value to state
+                onChange={(e) => setPrice(e.target.value)} // <-- Added: Updating state on input change
+                className={`block w-full px-4 py-2 mt-2 text-gray-700 bg-white border rounded-md focus:outline-none focus:ring ${
+                  parseFloat(price) < min_price
+                    ? "border-red-500"
+                    : "border-gray-200" // <-- Added: Conditional class for red border
+                }`}
               />
             </div>
 
@@ -109,7 +128,7 @@ const JobDetails = () => {
                 name="email"
                 disabled
                 defaultValue={user?.email}
-                className="block w-full px-4 py-2 mt-2 text-gray-700 bg-white border border-gray-200 rounded-md   focus:border-blue-400 focus:ring-blue-300 focus:ring-opacity-40  focus:outline-none focus:ring"
+                className="block w-full px-4 py-2 mt-2 text-gray-700 bg-white border border-gray-200 rounded-md focus:outline-none focus:ring focus:border-blue-400"
               />
             </div>
 
@@ -121,14 +140,13 @@ const JobDetails = () => {
                 id="comment"
                 name="comment"
                 type="text"
-                className="block w-full px-4 py-2 mt-2 text-gray-700 bg-white border border-gray-200 rounded-md   focus:border-blue-400 focus:ring-blue-300 focus:ring-opacity-40  focus:outline-none focus:ring"
+                className="block w-full px-4 py-2 mt-2 text-gray-700 bg-white border border-gray-200 rounded-md focus:outline-none focus:ring focus:border-blue-400"
               />
             </div>
             <div className="flex flex-col gap-2 ">
               <label className="text-gray-700">Deadline</label>
-
               <DatePicker
-                className="border py-2"
+                className="border rounded px-2 py-2 md:w-[100px]"
                 selected={startDate}
                 onChange={(date) => setStartDate(date)}
               />
